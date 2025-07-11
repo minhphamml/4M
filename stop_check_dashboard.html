@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-STOP Check Sheet Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .main-table-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #e3f2fd;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stats-card, .controls-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .controls-card h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .control-group input, .control-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-info {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 10px;
+            }
+
+            th, td {
+                padding: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Self-STOP Check Sheet Dashboard</h1>
+            <div class="header-info">
+                <div class="info-card">
+                    <div><strong>Cutting No:</strong> 1</div>
+                </div>
+                <div class="info-card">
+                    <div><strong>Shift:</strong> 1</div>
+                </div>
+                <div class="info-card">
+                    <div><strong>Month:</strong> 06 Year: 2025</div>
+                </div>
+                <div class="info-card">
+                    <div><strong>Status:</strong> Active</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showPage('dashboard')">Dashboard</button>
+            <button class="tab-btn" onclick="showPage('analysis')">Analysis</button>
+        </div>
+
+        <div id="dashboard" class="page active">
+            <div class="dashboard-grid">
+                <div class="main-table-container">
+                    <h3 style="margin-bottom: 15px; color: #2c3e50;">Production Check Sheet</h3>
+                    <div class="table-wrapper">
+                        <table id="checkSheetTable">
+                            <thead>
+                                <tr>
+                                    <th rowspan="3">No</th>
+                                    <th rowspan="3">Date</th>
+                                    <th rowspan="3">Name</th>
+                                    <th rowspan="3">Marker</th>
+                                    <th colspan="3">Machine</th>
+                                    <th colspan="3">Man</th>
+                                    <th colspan="3">Material</th>
+                                    <th colspan="6">Other</th>
+                                    <th rowspan="3">Start Time</th>
+                                    <th rowspan="3">Problem End Time</th>
+                                    <th rowspan="3">Confirm Sub Leader</th>
+                                </tr>
+                                <tr>
+                                    <th rowspan="2">Machine Broken</th>
+                                    <th rowspan="2">Tempor. ary Downti me</th>
+                                    <th rowspan="2">Dinning</th>
+                                    <th rowspan="2">Disposal to go out</th>
+                                    <th rowspan="2">Martial Arts</th>
+                                    <th rowspan="2">Material MG [cutting tool is not sharp]</th>
+                                    <th rowspan="2">Training</th>
+                                    <th rowspan="2">Sickness Lea ve & other reasons to go out</th>
+                                    <th rowspan="2">Cutting time</th>
+                                    <th rowspan="2">waiting Intime</th>
+                                    <th rowspan="2">semi finished products</th>
+                                </tr>
+                                <tr></tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <tr>
+                                    <td>1</td>
+                                    <td>18/06/2025</td>
+                                    <td>Đức</td>
+                                    <td>4C009</td>
+                                    <td></td>
+                                    <td>√</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>7:40</td>
+                                    <td>7:50</td>
+                                    <td>Hòa</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>18/06/2025</td>
+                                    <td>Đức</td>
+                                    <td>4C209</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>9:56</td>
+                                    <td>10:02</td>
+                                    <td>Hòa</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>18/06/2025</td>
+                                    <td>Đức</td>
+                                    <td>TÀI TREO</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>√</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>10:51</td>
+                                    <td>11:00</td>
+                                    <td>Hòa</td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>18/06/2025</td>
+                                    <td>Đức</td>
+                                    <td>4C209</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>√</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td>15:14</td>
+                                    <td>15:24</td>
+                                    <td>Hòa</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="sidebar">
+                    <div class="stats-card">
+                        <h3 style="color: #2c3e50;">Today's Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-number">4</span>
+                                <span>Total Issues</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">33</span>
+                                <span>Total Minutes</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">8.25</span>
+                                <span>Avg Duration</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">100%</span>
+                                <span>Resolved</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls-card">
+                        <h3>Add New Entry</h3>
+                        <div class="control-group">
+                            <label>Name:</label>
+                            <input type="text" id="workerName" placeholder="Enter worker name">
+                        </div>
+                        <div class="control-group">
+                            <label>Marker:</label>
+                            <input type="text" id="marker" placeholder="Enter marker code">
+                        </div>
+                        <div class="control-group">
+                            <label>Issue Type:</label>
+                            <select id="issueType">
+                                <option value="">Select issue type</option>
+                                <option value="machine">Machine Issue</option>
+                                <option value="man">Man Issue</option>
+                                <option value="material">Material Issue</option>
+                                <option value="other">Other Issue</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Start Time:</label>
+                            <input type="time" id="startTime">
+                        </div>
+                        <div class="control-group">
+                            <label>End Time:</label>
+                            <input type="time" id="endTime">
+                        </div>
+                        <button class="btn" onclick="addNewEntry()">Add Entry</button>
+                        <button class="btn" onclick="exportData()" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">Export Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="analysis" class="page">
+            <div class="analysis-grid">
+                <div class="chart-container">
+                    <h3 style="color: #2c3e50;">Issues by Category</h3>
+                    <div class="chart-placeholder">
+                        Machine: 25%<br>
+                        Man: 50%<br>
+                        Material: 25%<br>
+                        Other: 0%
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3 style="color: #2c3e50;">Daily Trend</h3>
+                    <div class="chart-placeholder">
+                        Downtime Trend Chart<br>
+                        📈 33 min total today
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3 style="color: #2c3e50;">Worker Performance</h3>
+                    <div class="chart-placeholder">
+                        Đức: 4 issues<br>
+                        Average: 8.25 min/issue<br>
+                        Performance: Good
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3 style="color: #2c3e50;">Problem Resolution Time</h3>
+                    <div class="chart-placeholder">
+                        Fastest: 6 min<br>
+                        Slowest: 10 min<br>
+                        Target: < 15 min ✅
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data storage
+        let checkSheetData = [
+            {
+                no: 1,
+                date: '18/06/2025',
+                name: 'Đức',
+                marker: '4C009',
+                issue: 'machine',
+                startTime: '7:40',
+                endTime: '7:50',
+                confirmer: 'Hòa'
+            },
+            {
+                no: 2,
+                date: '18/06/2025',
+                name: 'Đức',
+                marker: '4C209',
+                issue: 'other',
+                startTime: '9:56',
+                endTime: '10:02',
+                confirmer: 'Hòa'
+            },
+            {
+                no: 3,
+                date: '18/06/2025',
+                name: 'Đức',
+                marker: 'TÀI TREO',
+                issue: 'man',
+                startTime: '10:51',
+                endTime: '11:00',
+                confirmer: 'Hòa'
+            },
+            {
+                no: 4,
+                date: '18/06/2025',
+                name: 'Đức',
+                marker: '4C209',
+                issue: 'material',
+                startTime: '15:14',
+                endTime: '15:24',
+                confirmer: 'Hòa'
+            }
+        ];
+
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function addNewEntry() {
+            const name = document.getElementById('workerName').value;
+            const marker = document.getElementById('marker').value;
+            const issueType = document.getElementById('issueType').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+
+            if (!name || !marker || !issueType || !startTime || !endTime) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            const newEntry = {
+                no: checkSheetData.length + 1,
+                date: new Date().toLocaleDateString('en-GB'),
+                name: name,
+                marker: marker,
+                issue: issueType,
+                startTime: startTime,
+                endTime: endTime,
+                confirmer: 'System'
+            };
+
+            checkSheetData.push(newEntry);
+            updateTable();
+            updateStats();
+            
+            // Clear form
+            document.getElementById('workerName').value = '';
+            document.getElementById('marker').value = '';
+            document.getElementById('issueType').value = '';
+            document.getElementById('startTime').value = '';
+            document.getElementById('endTime').value = '';
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            checkSheetData.forEach(entry => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${entry.no}</td>
+                    <td>${entry.date}</td>
+                    <td>${entry.name}</td>
+                    <td>${entry.marker}</td>
+                    <td>${entry.issue === 'machine' ? '√' : ''}</td>
+                    <td>${entry.issue === 'machine' ? '√' : ''}</td>
+                    <td>${entry.issue === 'man' ? '√' : ''}</td>
+                    <td></td>
+                    <td>${entry.issue === 'material' ? '√' : ''}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>${entry.startTime}</td>
+                    <td>${entry.endTime}</td>
+                    <td>${entry.confirmer}</td>
+                `;
+            });
+        }
+
+        function updateStats() {
+            const totalIssues = checkSheetData.length;
+            let totalMinutes = 0;
+            
+            checkSheetData.forEach(entry => {
+                const start = new Date(`2025-01-01 ${entry.startTime}`);
+                const end = new Date(`2025-01-01 ${entry.endTime}`);
+                totalMinutes += (end - start) / (1000 * 60);
+            });
+            
+            const avgDuration = totalMinutes / totalIssues;
+            
+            document.querySelector('.stat-item:nth-child(1) .stat-number').textContent = totalIssues;
+            document.querySelector('.stat-item:nth-child(2) .stat-number').textContent = Math.round(totalMinutes);
+            document.querySelector('.stat-item:nth-child(3) .stat-number').textContent = avgDuration.toFixed(1);
+        }
+
+        function exportData() {
+            let csv = 'No,Date,Name,Marker,Issue Type,Start Time,End Time,Confirmer\n';
+            checkSheetData.forEach(entry => {
+                csv += `${entry.no},${entry.date},${entry.name},${entry.marker},${entry.issue},${entry.startTime},${entry.endTime},${entry.confirmer}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'check_sheet_data.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+        });
+    </script>
+</body>
+</html>
